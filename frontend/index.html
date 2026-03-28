@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>庭长阅核系统</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <!-- marked.js for Markdown rendering -->
+  <script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js"></script>
+  <!-- mermaid.js for mind map / diagram rendering -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <div class="app-wrapper">
+    <!-- ── Sidebar ───────────────────────────────────────────── -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo-area">
+          <span class="logo-icon">⚖</span>
+          <div>
+            <div class="logo-title">庭长阅核系统</div>
+            <div class="logo-sub">智能文书审查平台</div>
+          </div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="#upload-section" class="nav-item active" data-section="upload">
+          <span class="nav-icon">📄</span>文书上传
+        </a>
+        <a href="#result-section" class="nav-item" data-section="result" id="nav-result" style="display:none;">
+          <span class="nav-icon">📊</span>阅核报告
+        </a>
+      </nav>
+
+      <!-- Settings Panel -->
+      <div class="settings-panel">
+        <div class="settings-title">⚙ API 设置</div>
+        <div class="form-group">
+          <label for="apiKey">API Key</label>
+          <input type="password" id="apiKey" placeholder="sk-..." autocomplete="off" />
+          <div class="form-hint">留空则进入演示模式</div>
+        </div>
+        <div class="form-group">
+          <label for="modelSelect">模型</label>
+          <select id="modelSelect">
+            <option value="gpt-4o">GPT-4o</option>
+            <option value="gpt-4o-mini">GPT-4o mini</option>
+            <option value="gpt-4-turbo">GPT-4 Turbo</option>
+            <option value="gpt-4">GPT-4</option>
+            <option value="o1-preview">o1-preview</option>
+            <option value="custom">自定义...</option>
+          </select>
+        </div>
+        <div class="form-group" id="customModelGroup" style="display:none;">
+          <label for="customModel">自定义模型名称</label>
+          <input type="text" id="customModel" placeholder="例：deepseek-chat" />
+        </div>
+        <div class="form-group">
+          <label for="baseUrl">API Base URL（可选）</label>
+          <input type="text" id="baseUrl" placeholder="https://api.openai.com/v1" />
+          <div class="form-hint">兼容 OpenAI 接口的第三方服务</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ── Main Content ──────────────────────────────────────── -->
+    <main class="main-content">
+      <!-- Upload Section -->
+      <section id="upload-section" class="content-section active">
+        <div class="page-header">
+          <h1 class="page-title">裁判文书草稿上传</h1>
+          <p class="page-subtitle">上传裁判文书草稿，系统将自动生成案情摘要、研究报告及修订建议</p>
+        </div>
+
+        <div class="upload-tabs">
+          <button class="tab-btn active" data-tab="file-tab">📁 文件上传</button>
+          <button class="tab-btn" data-tab="text-tab">📝 文本粘贴</button>
+        </div>
+
+        <div id="file-tab" class="tab-panel active">
+          <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">📂</div>
+            <div class="upload-text">拖放文件到此处，或点击选择文件</div>
+            <div class="upload-hint">支持格式：PDF、DOCX、DOC、TXT（最大 20MB）</div>
+            <input type="file" id="fileInput" accept=".pdf,.docx,.doc,.txt,.md" hidden />
+            <button class="btn btn-outline" onclick="document.getElementById('fileInput').click()">选择文件</button>
+          </div>
+          <div id="fileInfo" class="file-info" style="display:none;">
+            <span class="file-icon">📄</span>
+            <span id="fileName"></span>
+            <span id="fileSize" class="file-size"></span>
+            <button class="btn btn-sm btn-ghost" onclick="clearFile()">✕</button>
+          </div>
+        </div>
+
+        <div id="text-tab" class="tab-panel">
+          <div class="form-group">
+            <label for="textInput">粘贴文书内容</label>
+            <textarea id="textInput" rows="18" placeholder="请在此处粘贴裁判文书草稿全文…"></textarea>
+            <div class="char-count"><span id="charCount">0</span> 字符</div>
+          </div>
+        </div>
+
+        <div class="action-bar">
+          <button class="btn btn-primary btn-large" id="analyzeBtn" onclick="startAnalysis()">
+            <span class="btn-icon">🔍</span>开始阅核分析
+          </button>
+        </div>
+
+        <div id="loading" class="loading-overlay" style="display:none;">
+          <div class="loading-card">
+            <div class="spinner"></div>
+            <div class="loading-title">AI 正在分析文书…</div>
+            <div class="loading-steps" id="loadingSteps">
+              <div class="loading-step active">📋 解析文书内容</div>
+              <div class="loading-step">🔍 提取案情要素</div>
+              <div class="loading-step">⚖ 进行法律审查</div>
+              <div class="loading-step">✍ 生成修订建议</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Result Section -->
+      <section id="result-section" class="content-section">
+        <div class="result-header">
+          <div>
+            <h1 class="page-title">阅核报告</h1>
+            <div class="result-meta" id="resultMeta"></div>
+          </div>
+          <div class="result-actions">
+            <button class="btn btn-outline" onclick="copyReport()">📋 复制报告</button>
+            <button class="btn btn-outline" onclick="downloadReport()">⬇ 下载 MD</button>
+            <button class="btn btn-ghost" onclick="backToUpload()">← 重新上传</button>
+          </div>
+        </div>
+
+        <!-- Quick Navigation Tabs -->
+        <div class="report-tabs">
+          <button class="report-tab active" data-target="section-1">一、案情事实</button>
+          <button class="report-tab" data-target="section-2">二、研究报告</button>
+          <button class="report-tab" data-target="section-3">三、修订建议</button>
+        </div>
+
+        <div id="reportContent" class="report-content markdown-body"></div>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" class="toast" style="display:none;"></div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
