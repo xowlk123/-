@@ -68,3 +68,19 @@ def test_document_parser_md():
     content = '# 标题\n正文内容'
     result = parse_document(io.BytesIO(content.encode('utf-8')), 'test.md')
     assert '正文内容' in result
+
+
+def test_main_find_free_port():
+    """_find_free_port should return a valid port number."""
+    from main import _find_free_port
+    port = _find_free_port()
+    assert isinstance(port, int)
+    assert 1024 <= port <= 65535
+
+
+def test_main_module_importable():
+    """The main desktop launcher module should be importable."""
+    import main
+    assert callable(main.main)
+    assert callable(main._start_flask)
+    assert callable(main._find_free_port)

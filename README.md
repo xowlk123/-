@@ -33,13 +33,20 @@ cp .env.example .env
 | `PORT` | 服务端口（可选） | `5000` |
 | `FLASK_DEBUG` | 是否启用调试模式（可选） | `false` |
 
-### 3. 启动服务
+### 3. 启动应用
+
+**桌面模式（推荐）** — 自动弹出原生窗口，无需手动打开浏览器：
+
+```bash
+python main.py
+```
+
+**Web 模式** — 以传统 Web 服务运行，需在浏览器中打开：
 
 ```bash
 python app.py
+# 然后打开浏览器访问 http://localhost:5000
 ```
-
-打开浏览器访问 [http://localhost:5000](http://localhost:5000)
 
 ## 使用说明
 
@@ -51,7 +58,8 @@ python app.py
 
 ```
 .
-├── app.py                  # Flask 主应用
+├── main.py                 # 桌面应用启动入口（推荐）
+├── app.py                  # Flask 主应用 / Web 模式入口
 ├── requirements.txt        # Python 依赖
 ├── .env.example            # 环境变量示例
 ├── prompts/
