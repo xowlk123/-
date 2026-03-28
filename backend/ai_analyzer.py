@@ -82,7 +82,9 @@ async def analyze_document(
 
     client = AsyncOpenAI(**kwargs)
 
-    # Truncate very long documents to fit within context window
+    # Truncate very long documents to stay within model context window limits.
+    # At ~3 chars/token, 60 000 chars ≈ 20 000 tokens, leaving ample room for
+    # the system prompt and the generated response within a 32k-token context.
     max_chars = 60000
     if len(document_text) > max_chars:
         document_text = document_text[:max_chars] + "\n\n[...文书内容过长，已截断...]"

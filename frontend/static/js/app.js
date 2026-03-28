@@ -239,7 +239,7 @@ async function renderMermaidInContainer(container) {
     const graphDef = el.textContent.trim();
     if (!graphDef) continue;
     try {
-      const id = "mermaid-" + Date.now() + "-" + i;
+      const id = uniqueMermaidId();
       const { svg } = await mermaid.render(id, graphDef);
       el.innerHTML = svg;
     } catch (err) {
@@ -279,10 +279,7 @@ function downloadReport() {
   const blob = new Blob([currentReportMd], { type: "text/markdown;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
-  const now = new Date();
-  const ts = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,"0")}${String(now.getDate()).padStart(2,"0")}`;
-  a.href = url;
-  a.download = `阅核报告_${ts}.md`;
+  a.download = `阅核报告_${formatDateForFilename(new Date())}.md`;
   a.click();
   URL.revokeObjectURL(url);
   showToast("报告已下载");
@@ -335,4 +332,16 @@ function showToast(msg, type = "info") {
 /* ── Utils ──────────────────────────────── */
 function escapeHtml(str) {
   return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+
+function uniqueMermaidId() {
+  return "mermaid-" + Date.now() + "-" + (++_mermaidCounter);
+}
+
+function formatDateForFilename(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}${m}${d}`;
 }
