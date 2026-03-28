@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>庭长阅核系统</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <!-- marked.js for Markdown rendering -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <!-- mermaid.js for mind map / flow chart rendering -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-inner">
+      <span class="header-icon">⚖️</span>
+      <h1>庭长阅核系统</h1>
+      <p class="header-subtitle">裁判文书智能阅核辅助平台</p>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Upload / Input Panel -->
+    <section class="card upload-section" id="upload-section">
+      <h2 class="section-title">📄 上传裁判文书草稿</h2>
+
+      <!-- Tab: File upload vs. Text paste -->
+      <div class="tab-group">
+        <button class="tab-btn active" id="tab-file" onclick="switchTab('file')">上传文件</button>
+        <button class="tab-btn" id="tab-text" onclick="switchTab('text')">粘贴文本</button>
+      </div>
+
+      <!-- File Upload Tab -->
+      <div id="panel-file" class="tab-panel active">
+        <div class="drop-zone" id="drop-zone">
+          <div class="drop-zone-content">
+            <span class="upload-icon">📁</span>
+            <p>将文件拖拽至此处，或</p>
+            <label for="file-input" class="btn btn-secondary">选择文件</label>
+            <input type="file" id="file-input" accept=".pdf,.docx,.doc,.txt,.md" hidden />
+            <p class="hint">支持 PDF、DOCX、TXT、MD 格式，最大 20 MB</p>
+          </div>
+          <div class="selected-file" id="selected-file" style="display:none">
+            <span class="file-icon">📎</span>
+            <span id="file-name-display"></span>
+            <button class="btn-clear" onclick="clearFile()">✕</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Text Paste Tab -->
+      <div id="panel-text" class="tab-panel">
+        <textarea
+          id="text-input"
+          class="text-area"
+          placeholder="请将裁判文书草稿文本粘贴至此处..."
+          rows="14"
+        ></textarea>
+      </div>
+
+      <div class="action-row">
+        <button class="btn btn-primary" id="analyze-btn" onclick="startAnalysis()">
+          开始阅核分析
+        </button>
+      </div>
+
+      <div id="error-msg" class="error-msg" style="display:none"></div>
+    </section>
+
+    <!-- Progress Indicator -->
+    <div id="progress-section" class="progress-section" style="display:none">
+      <div class="spinner"></div>
+      <p class="progress-text">正在进行 AI 阅核分析，请稍候…</p>
+    </div>
+
+    <!-- Result Panel -->
+    <section class="card result-section" id="result-section" style="display:none">
+      <div class="result-header">
+        <h2 class="section-title">📋 阅核分析结果</h2>
+        <div class="result-actions">
+          <button class="btn btn-secondary" onclick="copyResult()">📋 复制结果</button>
+          <button class="btn btn-secondary" onclick="downloadResult()">💾 下载 Markdown</button>
+          <button class="btn btn-secondary" onclick="resetApp()">🔄 重新上传</button>
+        </div>
+      </div>
+      <div id="result-content" class="markdown-body"></div>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <p>庭长阅核系统 · 仅供辅助参考，最终阅核结论以庭长判断为准</p>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
