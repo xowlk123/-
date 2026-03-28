@@ -40,4 +40,7 @@ def analyze_document(document_content: str) -> str:
         max_tokens=4096,
     )
 
-    return response.choices[0].message.content
+    content = response.choices[0].message.content
+    if not content:
+        raise ValueError('AI 模型返回了空响应，请稍后重试')
+    return content
